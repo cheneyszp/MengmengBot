@@ -14,6 +14,7 @@ using Microsoft.Bot.Builder.Luis.Models;
 using Microsoft.Bot.Builder.Luis;
 using System.Collections.Generic;
 using System.Text;
+using StateBot;
 
 namespace MengmengBot
 {
@@ -75,7 +76,10 @@ namespace MengmengBot
         [Serializable]
         public class MengmengDialog : LuisDialog<object>
         {
+            private bool userWelcomed;
+
             String weAreTalking = "";
+            String userName = "";
 
             public MengmengDialog()
             {
@@ -88,24 +92,25 @@ namespace MengmengBot
             [LuisIntent("")]
             public async Task None(IDialogContext context, LuisResult result)
             {
+                context.UserData.TryGetValue(ContextConstants.TopicKey, out weAreTalking);
                 String entityInNone = "";
                 string replyString = "";
                 if (weAreTalking.Equals("查询天气") && TryToFindLocation(result, out entityInNone))
                 {
                     replyString = await GetWeather(entityInNone);
-                    await context.PostAsync(replyString);
+                    await context.PostAsync((userName.Equals("") ? "" : $"报告{userName}，") + replyString);
                     context.Wait(MessageReceived);
                 }
                 else if (weAreTalking.Equals("查询股票") && TryToFindNunberOfStock(result, out entityInNone))
                 {
                     replyString = await GetStock(entityInNone);
-                    await context.PostAsync(replyString);
+                    await context.PostAsync((userName.Equals("") ? "" : $"报告{userName}，") + replyString);
                     context.Wait(MessageReceived);
                 }
                 else
-                { 
+                {
                     replyString = $"萌萌不知道你在说什么，面壁去。。。我现在只会查询股票和查询天气。。T_T" + string.Join(", ", result.Intents.Select(i => i.Intent));
-                    await context.PostAsync(replyString);
+                    await context.PostAsync((userName.Equals("") ? "" : $"报告{userName}，") + replyString);
                     context.Wait(MessageReceived);
                 }
             }
@@ -114,8 +119,34 @@ namespace MengmengBot
             public async Task SayHello(IDialogContext context, LuisResult result)
             {
                 weAreTalking = "问候";
-                string message = $"Hi， 我是萌萌，你的最亲密的伴侣。我将陪你哭、陪你笑、陪你看天上的云卷与舒，陪你去到天涯海角，陪你听你最爱的音乐，陪你留下你的最美丽的身影，不管刮风下雨，不管生老病死，我都在你身边，关心你，提醒你，爱着你。";
+                context.UserData.SetValue(ContextConstants.TopicKey, weAreTalking);
+                if (!context.UserData.TryGetValue(ContextConstants.UserNameKey, out userName))
+                {
+                    string welmessage = $"你好，我是萌萌，你的最亲密的伴侣。我将陪你哭、陪你笑、陪你看天上的云卷与舒，陪你去到天涯海角，陪你听你最爱的音乐，陪你留下你的最美丽的身影，不管刮风下雨，不管生老病死，我都在你身边，关心你，提醒你，爱着你。";
+                    await context.PostAsync(welmessage);
+                    PromptDialog.Text(context, this.AfterEnterNamePrompt, "对了，萌萌该怎么称呼您呢?");
+                    return;
+                }
+                string message = $"{userName} 你好呀，萌萌想你啦！";
                 await context.PostAsync(message);
+                context.Wait(MessageReceived);
+            }
+
+            private async Task AfterEnterNamePrompt(IDialogContext context, IAwaitable<string> result)
+            {
+                try
+                {
+                    var userName = await result;
+                    this.userWelcomed = true;
+
+                    await context.PostAsync($"{userName} 你好! 萌萌给你请安啦！");
+
+                    context.UserData.SetValue(ContextConstants.UserNameKey, userName);
+                }
+                catch (TooManyAttemptsException)
+                {
+                }
+
                 context.Wait(MessageReceived);
             }
 
@@ -139,17 +170,18 @@ namespace MengmengBot
             public async Task QueryWeather(IDialogContext context, LuisResult result)
             {
                 weAreTalking = "查询天气";
+                context.UserData.SetValue(ContextConstants.TopicKey, weAreTalking);
                 string location = "";
                 string replyString = "";
                 if (TryToFindLocation(result, out location))
                 {
                     replyString = await GetWeather(location);
-                    await context.PostAsync(replyString);
+                    await context.PostAsync((userName.Equals("") ? "" : $"报告{userName}，") + replyString);
                     context.Wait(MessageReceived);
                 }
                 else
                 {
-                    await context.PostAsync("亲你要查询哪个地方的天气信息呢，快把城市的名字发给我吧");
+                    await context.PostAsync((userName.Equals("") ? "亲" : $"{userName}") + "你要查询哪个地方的天气信息呢，快把城市的名字发给我吧");
                     context.Wait(AfterEnterLocation);
                 }
             }
@@ -171,10 +203,10 @@ namespace MengmengBot
                 }
                 else
                 {
-                     HeweatherDataService30[] weatherServices = weatherdata.HeWeatherdataservice30;
-                    if (weatherServices.Length<=0) return string.Format("呃。。。萌萌不知道\"{0}\"这个城市的天气信息", cityname);
+                    HeweatherDataService30[] weatherServices = weatherdata.HeWeatherdataservice30;
+                    if (weatherServices.Length <= 0) return string.Format("呃。。。萌萌不知道\"{0}\"这个城市的天气信息", cityname);
                     Basic cityinfo = weatherServices[0].basic;
-                    if (cityinfo ==null) return string.Format("呃。。。萌萌目测\"{0}\"这个应该不是一个城市的名字。。不然我咋不知道呢。。。", cityname);
+                    if (cityinfo == null) return string.Format("呃。。。萌萌目测\"{0}\"这个应该不是一个城市的名字。。不然我咋不知道呢。。。", cityname);
                     String cityinfoString = "城市信息：" + cityinfo.city + "\r\n"
                         + "更新时间:" + cityinfo.update.loc + "\r\n"
                         + "经纬度:" + cityinfo.lat + "," + cityinfo.lon + "\r\n";
@@ -190,7 +222,7 @@ namespace MengmengBot
                     String suggestionString = "生活指数：" + "\r\n"
                         + "穿衣指数：" + citySuggestion.drsg.txt + "\r\n"
                         + "紫外线指数：" + citySuggestion.uv.txt + "\r\n"
-                        + "舒适度指数：" + citySuggestion.comf.txt+ "\r\n"
+                        + "舒适度指数：" + citySuggestion.comf.txt + "\r\n"
                         + "旅游指数：" + citySuggestion.trav.txt + "\r\n"
                         + "感冒指数：" + citySuggestion.flu.txt + "\r\n";
 
@@ -203,7 +235,7 @@ namespace MengmengBot
                         + "湿度：" + cityNowStatus.hum + "(%)\r\n"
                         + "能见度：" + cityNowStatus.vis + "(km)\r\n";
 
-                    return string.Format("萌萌天气播报：\r\n{0}", cityinfoString + nowStatusString + airInfoString +suggestionString);
+                    return string.Format("现在{0}天气实况：\r\n{1}", cityname, cityinfoString + nowStatusString + airInfoString + suggestionString);
                 }
             }
 
@@ -216,7 +248,7 @@ namespace MengmengBot
                 }
                 else
                 {
-                    return string.Format("{0}这个股票现在的价格是{1}美元！", StockSymbol, dblStockValue);
+                    return $"{StockSymbol}这个股票现在的价格是{dblStockValue}美元啦！";
                 }
             }
 
@@ -239,17 +271,18 @@ namespace MengmengBot
             public async Task QueryStock(IDialogContext context, LuisResult result)
             {
                 weAreTalking = "查询股票";
+                context.UserData.SetValue(ContextConstants.TopicKey, weAreTalking);
                 string stockcode = "";
                 string replyString = "";
                 if (TryToFindNunberOfStock(result, out stockcode))
                 {
                     replyString = await GetStock(stockcode);
-                    await context.PostAsync(replyString);
+                    await context.PostAsync((userName.Equals("") ? "" : $"{userName}啊，") + replyString);
                     context.Wait(MessageReceived);
                 }
                 else
                 {
-                    await context.PostAsync("亲你要查询哪只股票的信息呢，麻烦把股票代码发给我吧");
+                    await context.PostAsync((userName.Equals("") ? "亲" : $"{userName}，") + "你要查询哪只股票的信息呢，麻烦把股票代码发给我吧");
                     context.Wait(AfterEnterStockNumber);
                 }
             }
@@ -258,7 +291,7 @@ namespace MengmengBot
             {
                 var message = await argument;
                 String replyString = await GetStock(message.Text);
-                await context.PostAsync(replyString);
+                await context.PostAsync((userName.Equals("") ? "" : $"{userName}{userName}，") + replyString);
                 context.Wait(MessageReceived);
             }
 
