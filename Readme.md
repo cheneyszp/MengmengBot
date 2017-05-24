@@ -18,7 +18,7 @@ http://www.cnblogs.com/rocsheh/p/5846009.html
 ```html
 <body style="font-family:'Segoe UI'">
 <iframe name="myframe" scrolling="auto" width="100%" height="100%" onload="document.all['myframe'].style.height=myframe.document.body.scrollHeight" 
- src="https://webchat.botframework.com/embed/mengmeng?s=YOU_WEB_KEY" style="height: 502px; max-height: 502px;"></iframe>
+ src="https://webchat.botframework.com/embed/YOU_BOT_HANDLER?s=YOU_WEB_KEY" style="height: 502px; max-height: 502px;"></iframe>
 </body>
 ```
 
