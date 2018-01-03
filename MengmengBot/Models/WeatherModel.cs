@@ -6,13 +6,13 @@ using System.Web;
 
 namespace MengmengBot.Models
 {
+
     public class WeatherData
     {
-        [JsonProperty(PropertyName = "HeWeather data service 3.0")]
-        public HeweatherDataService30[] HeWeatherdataservice30 { get; set; }
+        public Heweather5[] HeWeather5 { get; set; }
     }
 
-    public class HeweatherDataService30
+    public class Heweather5
     {
         public Aqi aqi { get; set; }
         public Basic basic { get; set; }
@@ -31,13 +31,13 @@ namespace MengmengBot.Models
     public class City
     {
         public string aqi { get; set; }
-        public string co { get; set; }
-        public string no2 { get; set; }
-        public string o3 { get; set; }
-        public string pm10 { get; set; }
-        public string pm25 { get; set; }
         public string qlty { get; set; }
+        public string pm25 { get; set; }
+        public string pm10 { get; set; }
+        public string no2 { get; set; }
         public string so2 { get; set; }
+        public string co { get; set; }
+        public string o3 { get; set; }
     }
 
     public class Basic
@@ -84,6 +84,7 @@ namespace MengmengBot.Models
 
     public class Suggestion
     {
+        public Air air { get; set; }
         public Comf comf { get; set; }
         public Cw cw { get; set; }
         public Drsg drsg { get; set; }
@@ -91,6 +92,12 @@ namespace MengmengBot.Models
         public Sport sport { get; set; }
         public Trav trav { get; set; }
         public Uv uv { get; set; }
+    }
+
+    public class Air
+    {
+        public string brf { get; set; }
+        public string txt { get; set; }
     }
 
     public class Comf
@@ -145,12 +152,15 @@ namespace MengmengBot.Models
         public string pop { get; set; }
         public string pres { get; set; }
         public Tmp tmp { get; set; }
+        public string uv { get; set; }
         public string vis { get; set; }
         public Wind1 wind { get; set; }
     }
 
     public class Astro
     {
+        public string mr { get; set; }
+        public string ms { get; set; }
         public string sr { get; set; }
         public string ss { get; set; }
     }
@@ -179,12 +189,19 @@ namespace MengmengBot.Models
 
     public class Hourly_Forecast
     {
+        public Cond2 cond { get; set; }
         public string date { get; set; }
         public string hum { get; set; }
         public string pop { get; set; }
         public string pres { get; set; }
         public string tmp { get; set; }
         public Wind2 wind { get; set; }
+    }
+
+    public class Cond2
+    {
+        public string code { get; set; }
+        public string txt { get; set; }
     }
 
     public class Wind2
@@ -194,5 +211,6 @@ namespace MengmengBot.Models
         public string sc { get; set; }
         public string spd { get; set; }
     }
+
 
 }

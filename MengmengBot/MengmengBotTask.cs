@@ -12,27 +12,35 @@ namespace MengmengBot
 {
     public class MengmengBotTask
     {
-        public static async Task<double?> GetStockRateAsync(string StockSymbol)
+        public static async Task<String> GetStockRateAsync(string StockSymbol)
         {
             try
             {
-                string ServiceURL = $"http://finance.yahoo.com/d/quotes.csv?s={StockSymbol}&f=sl1d1nd";
-                string ResultInCSV;
-                using (WebClient client = new WebClient())
+                string pattern = @"^[a-zA-Z]*$";
+                if (StockSymbol.Length == 4 && System.Text.RegularExpressions.Regex.IsMatch(StockSymbol, pattern))//判断字符串长度  
                 {
-                    ResultInCSV = await client.DownloadStringTaskAsync(ServiceURL).ConfigureAwait(false);
-                }
-                var FirstLine = ResultInCSV.Split('\n')[0];
-                var Price = FirstLine.Split(',')[1];
-                if (Price != null && Price.Length >= 0)
-                {
-                    double result;
-                    if (double.TryParse(Price, out result))
-                    {
-                        return result;
-                    }
+                    String result = $"请查看："+"http://gu.sina.cn/us/hq/quotes.php?code=" + StockSymbol + "&from=pc";
+                    return result;
                 }
                 return null;
+                
+                //string ServiceURL = $"http://finance.yahoo.com/d/quotes.csv?s={StockSymbol}&f=sl1d1nd";
+                //string ResultInCSV;
+                //using (WebClient client = new WebClient())
+                //{
+                //    ResultInCSV = await client.DownloadStringTaskAsync(ServiceURL).ConfigureAwait(false);
+                //}
+                //var FirstLine = ResultInCSV.Split('\n')[0];
+                //var Price = FirstLine.Split(',')[1];
+                //if (Price != null && Price.Length >= 0)
+                //{
+                //    double result;
+                //    if (double.TryParse(Price, out result))
+                //    {
+                //        return result;
+                //    }
+                //}
+                //return null;
             }
             catch (WebException ex)
             {
@@ -45,7 +53,7 @@ namespace MengmengBot
         {
             try
             {
-                string ServiceURL = $"https://api.heweather.com/x3/weather?city={city}&key=YOUR_WEATHER_KEY";
+                string ServiceURL = $"https://free-api.heweather.com/v5/weather?city={city}&lang=zh&key=YOUR_WEATHER_KEY";
                 string ResultString;
                 using (WebClient client = new WebClient())
                 {

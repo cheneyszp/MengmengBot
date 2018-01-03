@@ -3,9 +3,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Web.Http;
-using System.Web.Http.Routing;
 
 namespace MengmengBot
 {
@@ -29,27 +27,11 @@ namespace MengmengBot
             // Web API routes
             config.MapHttpAttributeRoutes();
 
-            //config.Routes.MapHttpRoute(
-            //    name: "DefaultApi",
-            //    routeTemplate: "api/{controller}/{id}",
-            //    defaults: new { id = RouteParameter.Optional }
-            //);
-
-            //config.Routes.MapHttpRoute(
-            //    name: "DefaultApi",
-            //    routeTemplate: "api/{controller}/{Action}/{id}",
-            //    defaults: new { id = RouteParameter.Optional }
-            //);
-
             config.Routes.MapHttpRoute(
-                name: "MessageApi",
-                routeTemplate: "api/messages/{id}",
-                defaults: new { Controller = "Messages", action = "Post", id = RouteParameter.Optional });
-
-            config.Routes.MapHttpRoute(
-                name: "WechatCheckApi",
-                routeTemplate: "api/wechatcheck",
-                defaults: new { Controller = "Messages", action = "WechatCheck" });
+                name: "DefaultApi",
+                routeTemplate: "api/{controller}/{id}",
+                defaults: new { id = RouteParameter.Optional }
+            );
         }
     }
 }
